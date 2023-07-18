@@ -41,7 +41,7 @@ function init() {
         addRole();
       }
       if (answers.mainMenu === 'Update an employee role') {
-        updateEmployee();
+        updateEmployeeRole();
       }
       if (answers.mainMenu === 'Exit Menu') {
         console.log('Exited menu. To restart enter npm start.')
@@ -128,7 +128,7 @@ const addRole = () => {
 const addEmployee = () => {
   db.query('SELECT * FROM employee_role', (err, empRoles) => {
     if (err) console.log(err);
-    roles = empRoles.map((role) => {
+    var roles = empRoles.map((role) => {
       return {
         name: role.title,
         value: role.id,
@@ -150,7 +150,7 @@ const addEmployee = () => {
         type: 'list',
         name: 'roleId',
         message: 'Chose role for employee',
-        choices: [roles]
+        choices: roles
       }
     ]).then(res => {
       // console.log(res.role);
@@ -168,14 +168,46 @@ const addEmployee = () => {
     });
   });
 }
-
-// const updateRole = () => {
-//   db.query(
-//     'SELECT * FROM employee_role',
-//     function(err, results) {
-//       console.table(results);
-//       init();
-//     }
-//     )};
+//==========================================================
+  const updateEmployeeRole = () => {
+    db.query('SELECT * FROM employee', (err, employee) => {
+      if (err) console.log(err);
+      employeeInfo = employee.map((info) => {
+        return {
+          name: `${info.first_name} ${info.last_name}`,
+          value: info.id,
+        };
+      });
+      console.log(roles);
+      inquirer.prompt([
+        {
+          type: 'list',
+          name: 'employeeName',
+          message: 'Chose employee',
+          choices: employeeInfo
+        },
+        {
+          type: 'list',
+          name: 'newRole',
+          message: 'Chose new role',
+          choices: roles
+        },
+      ]).then(res => {
+        // console.log(res.role);
+        db.query('INSERT INTO employee VALUES ?', {
+          first_name: res.first,
+          last_name: res.last,
+          role_id: res.roleId,
+        },
+          err => {
+            if (err) throw err;
+            console.log('Added employee!')
+          });
+        //callback function to go back to main menu
+        init();
+      });
+    });
+  }
+  
 
 
