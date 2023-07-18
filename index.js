@@ -131,7 +131,7 @@ db.query('SELECT * FROM employee_role', (err, empRoles) => {
       value: role.id, 
     };
   });
-});
+console.log(roles);
 
   inquirer.prompt(
   {
@@ -162,7 +162,8 @@ db.query('SELECT * FROM employee_role', (err, empRoles) => {
       init();
     });
   });
-};
+}
+)};
 
 // const updateRole = () => {
 //   db.query(
