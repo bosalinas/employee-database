@@ -53,6 +53,7 @@ inquirer
     });
   };
   init();
+
 // query view all dept
 const viewAllDept = () => {
 db.query(
@@ -62,6 +63,7 @@ db.query(
       init();
     }
   )};
+
 // query view all employees
 const viewAllEmployees = () => {
 db.query(
@@ -100,6 +102,7 @@ const addDept = () => {
     });
   });
 };
+
 //query adding a role
 const addRole = () => {
   inquirer.prompt({
@@ -118,7 +121,18 @@ const addRole = () => {
     });
   });
 };
+//get results out of query and then map then store in var 
 const addEmployee = () => {
+db.query('SELECT * FROM employee_role', (err, empRoles) => {
+  if (err) console.log(err);
+  roles = empRoles.map((role) => {
+    return {
+      name: role.title,
+      value: role.id, 
+    };
+  });
+});
+
   inquirer.prompt(
   {
     type: 'input',
@@ -128,28 +142,17 @@ const addEmployee = () => {
   {
     type: 'input',
     name: 'employeeLast',
-    message: 'Enter first name'
-  },
-  {
-    type: 'list',
-    name: 'employeeDept',
-    message: 'Chose department for employee',
-    choices: []
-  },
+    message: 'Enter last name'
+  }, 
   {
     type: 'list',
     name: 'employeeRole',
     message: 'Chose role for employee',
-    choices: []
-  },
-  {
-    type: 'input',
-    name: 'employeeSalary',
-    message: 'Enter employee salary'
+    choices: [roles]
   }
   
   ).then(res => {
-    db.query('INSERT INTO employee (first_name, last_name) VALUES (?)', [res.employeeFirst, res.employeeLast], (err, response) => {
+    db.query('INSERT INTO employee (first_name, last_name, role_id) VALUES (?)', [res.employeeFirst, res.employeeLast], (err, response) => {
       if (err) {
         console.log(err);
       } else {
