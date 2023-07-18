@@ -18,7 +18,7 @@ inquirer
         type: "list",
         name: "mainMenu",
         message: "SELECT A MENU OPTION",
-        choices: ["View all departments", "View all roles", "Add an employee", "Update an employee role", "Exit Menu"]
+        choices: ["View all departments", "View all roles", "Add an employee", "Add a department", "Add a role", "Update an employee role", "Exit Menu"]
     } 
   ])
   .then((answers) => {
@@ -76,66 +76,51 @@ const addDept = () => {
       type: 'input',
       name: 'deptname',
       message: 'Enter new department name'
+
     }).then(res => {
-      db.query(
-        'INSERT INTO department (deptname) ?'
-        init();
+      db.query('INSERT INTO department (deptname) ?', {
+        name: res.deptname
+      },
+      (err, response) => {
+        if (err) {
+          console.log(err)
+        } else {
+          console.log('Department added!')
         }
-      )};
+      })
+        //add some code for what you want to do with the results
+
+
+        //then within this callback function we can call your init function
+        init()
+      })
+      }
 //function to query updating employee
-const addRole = () => {
-  db.query(
-    'SELECT * FROM employee_role',
-    function(err, results) {
-      console.table(results); 
-      init();
-    } 
-    )};
+// const addRole = () => {
+//   db.query(
+//     'SELECT * FROM employee_role',
+//     function(err, results) {
+//       console.table(results); 
+//       init();
+//     } 
+//     )};
   
-const addEmployee = () => {
-  db.query(
-    'SELECT * FROM employee_role',
-    function(err, results) {
-      console.table(results); 
-      init();
-    } 
-    )};
+// const addEmployee = () => {
+//   db.query(
+//     'SELECT * FROM employee_role',
+//     function(err, results) {
+//       console.table(results); 
+//       init();
+//     } 
+//     )};
 
-const updateRole = () => {
-  db.query(
-    'SELECT * FROM employee_role',
-    function(err, results) {
-      console.table(results); 
-      init();
-    } 
-    )};
+// const updateRole = () => {
+//   db.query(
+//     'SELECT * FROM employee_role',
+//     function(err, results) {
+//       console.table(results); 
+//       init();
+//     } 
+//     )};
 
-  // //add role 
-  // function addRole () {
-  //   //add inquirer prompt for adding employee
-  //   inquirer
-  // .prompt([
-  //   /* insert role questions */
-  //   //set up seeds first
-  //   {
-  //       type: "list",
-  //       name: "mainMenu",
-  //       message: "What would you like to do?",
-  //       choices: ["view all departments", "view all roles"]
-  //   } 
-  // ])
-  // .then((answers) => {
-  //   //.then select statement for SQL
-  //   //answers.blah 
-  //   db.query(
-  //       'SELECT * FROM department',
-  //       function(err, results) {
-  //         console.table(results); 
-  //         init();
-  //       }
-  //     )})
-  // .catch((error) => {
-  //   console.log(error);
-  // });
-    
 
