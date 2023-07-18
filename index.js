@@ -187,6 +187,7 @@ const updateEmployeeRole = () => {
     ])
     .then(res => {
       db.query('SELECT * FROM employee_role', (err, empRoles) => {
+        console.log(res.employeeName);
         if (err) console.log(err);
         var roles = empRoles.map((role) => {
           return {
@@ -204,10 +205,8 @@ const updateEmployeeRole = () => {
         },
         ])
         .then(res => {
-          console.log(res.emoployeeName);
           console.log(res.newRole);
-
-          db.query('INSERT INTO employee_role VALUES ?', {
+          db.query('UPDATE employee SET title = (?) WHERE id = (?)', {
             title: res.newRole,
             id: res.employeeName, 
           },
