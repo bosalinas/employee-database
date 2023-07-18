@@ -203,13 +203,21 @@ const updateEmployeeRole = () => {
           choices: roles
         },
         ])
-        err => {
-          if (err) throw err;
-          console.log('Updated employee Role!')
-        };
+        .then(res => {
+          console.log(res.emoployeeName);
+          console.log(res.newRole);
+
+          db.query('INSERT INTO employee_role VALUES ?', {
+            title: res.newRole,
+            id: res.employeeName, 
+          },
+            err => {
+              if (err) throw err;
+              console.log('Added employee!')
+            });
+            init();
     });
   });
 });
-init();
-};
+})}
 
