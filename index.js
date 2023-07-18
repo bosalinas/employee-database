@@ -134,7 +134,6 @@ const addEmployee = () => {
         value: role.id,
       };
     });
-    console.log(roles);
     inquirer.prompt([
       {
         type: 'input',
@@ -167,47 +166,50 @@ const addEmployee = () => {
       init();
     });
   });
-}
+};
 //==========================================================
-  const updateEmployeeRole = () => {
-    db.query('SELECT * FROM employee', (err, employee) => {
-      if (err) console.log(err);
-      employeeInfo = employee.map((info) => {
-        return {
-          name: `${info.first_name} ${info.last_name}`,
-          value: info.id,
-        };
-      });
-      console.log(roles);
-      inquirer.prompt([
-        {
-          type: 'list',
-          name: 'employeeName',
-          message: 'Chose employee',
-          choices: employeeInfo
-        },
+const updateEmployeeRole = () => {
+  db.query('SELECT * FROM employee', (err, employee) => {
+    if (err) console.log(err);
+    var employeeInfo = employee.map((info) => {
+      return {
+        name: `${info.first_name} ${info.last_name}`,
+        value: info.id,
+      };
+    });
+    inquirer.prompt([
+      {
+        type: 'list',
+        name: 'employeeName',
+        message: 'Chose employee',
+        choices: employeeInfo
+      },
+    ])
+    .then(res => {
+      db.query('SELECT * FROM employee_role', (err, empRoles) => {
+        if (err) console.log(err);
+        var roles = empRoles.map((role) => {
+          return {
+            name: role.title,
+            value: role.id,
+          };
+        });
+      inquirer
+        .prompt([
         {
           type: 'list',
           name: 'newRole',
           message: 'Chose new role',
           choices: roles
         },
-      ]).then(res => {
-        // console.log(res.role);
-        db.query('INSERT INTO employee VALUES ?', {
-          first_name: res.first,
-          last_name: res.last,
-          role_id: res.roleId,
-        },
-          err => {
-            if (err) throw err;
-            console.log('Added employee!')
-          });
-        //callback function to go back to main menu
-        init();
-      });
+        ])
+        err => {
+          if (err) throw err;
+          console.log('Updated employee Role!')
+        };
     });
-  }
-  
-
+  });
+});
+init();
+};
 
