@@ -18,7 +18,7 @@ inquirer
         type: "list",
         name: "mainMenu",
         message: "SELECT A MENU OPTION",
-        choices: ["View all departments", "View all roles", "Add an employee", "Add a department", "Add a role", "Update an employee role", "Exit Menu"]
+        choices: ["View all departments", "View all roles", "View all employees","Add an employee", "Add a department", "Add a role", "Update an employee role", "Exit Menu"]
     } 
   ])
   .then((answers) => {
@@ -27,6 +27,9 @@ inquirer
     }
     if (answers.mainMenu === 'View all roles'){
       viewAllRoles();
+    }
+    if (answers.mainMenu === 'View all employees'){
+      viewAllEmployees();
     }
     if (answers.mainMenu === 'Add an employee'){
       addEmployee();
@@ -50,7 +53,7 @@ inquirer
     });
   };
   init();
-//function to query view all dept
+// query view all dept
 const viewAllDept = () => {
 db.query(
     'SELECT * FROM department',
@@ -59,7 +62,17 @@ db.query(
       init();
     }
   )};
-//function to query view all roles 
+// query view all employees
+const viewAllEmployees = () => {
+db.query(
+    'SELECT * FROM employee',
+    function(err, results) {
+      console.table(results); 
+      init();
+    }
+  )};
+
+//query view all roles 
 const viewAllRoles = () => {
   db.query(
       'SELECT * FROM employee_role',
@@ -71,48 +84,82 @@ const viewAllRoles = () => {
 
 //function to query adding an employee 
 const addDept = () => {
-  inquirer.prompt(
-    {
-      type: 'input',
-      name: 'deptname',
-      message: 'Enter new department name'
-
-    }).then(res => {
-      db.query('INSERT INTO department (deptname) ?', {
-        name: res.deptname
-      },
-      (err, response) => {
-        if (err) {
-          console.log(err)
-        } else {
-          console.log('Department added!')
-        }
-      })
-        //add some code for what you want to do with the results
-
-
-        //then within this callback function we can call your init function
-        init()
-      })
+  inquirer.prompt({
+    type: 'input',
+    name: 'deptname',
+    message: 'Enter new department name'
+  }).then(res => {
+    db.query('INSERT INTO department (deptname) VALUES (?)', [res.deptname], (err, response) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log('Department added!');
       }
-//function to query updating employee
-// const addRole = () => {
-//   db.query(
-//     'SELECT * FROM employee_role',
-//     function(err, results) {
-//       console.table(results); 
-//       init();
-//     } 
-//     )};
+      //callback function to go back to main menu
+      init();
+    });
+  });
+};
+//query adding a role
+const addRole = () => {
+  inquirer.prompt({
+    type: 'input',
+    name: 'title',
+    message: 'Enter new role'
+  }).then(res => {
+    db.query('INSERT INTO employee_role (title) VALUES (?)', [res.title], (err, response) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log('Role Added!');
+      }
+      //callback function to go back to main menu
+      init();
+    });
+  });
+};
+const addEmployee = () => {
+  inquirer.prompt(
+  {
+    type: 'input',
+    name: 'employeeFirst',
+    message: 'Enter first name'
+  },
+  {
+    type: 'input',
+    name: 'employeeLast',
+    message: 'Enter first name'
+  },
+  {
+    type: 'list',
+    name: 'employeeDept',
+    message: 'Chose department for employee',
+    choices: []
+  },
+  {
+    type: 'list',
+    name: 'employeeRole',
+    message: 'Chose role for employee',
+    choices: []
+  },
+  {
+    type: 'input',
+    name: 'employeeSalary',
+    message: 'Enter employee salary'
+  }
   
-// const addEmployee = () => {
-//   db.query(
-//     'SELECT * FROM employee_role',
-//     function(err, results) {
-//       console.table(results); 
-//       init();
-//     } 
-//     )};
+  ).then(res => {
+    db.query('INSERT INTO employee (first_name, last_name) VALUES (?)', [res.employeeFirst, res.employeeLast], (err, response) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log('Employee Added!');
+      }
+      //callback function to go back to main menu
+      init();
+    });
+  });
+};
 
 // const updateRole = () => {
 //   db.query(
