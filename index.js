@@ -134,8 +134,8 @@ const addEmployee = () => {
         value: role.id,
       };
     });
-
-    inquirer.prompt(
+    console.log(roles);
+    inquirer.prompt([
       {
         type: 'input',
         name: 'first',
@@ -152,9 +152,8 @@ const addEmployee = () => {
         message: 'Chose role for employee',
         choices: [roles]
       }
-
-    ).then(res => {
-      console.log(res.role);
+    ]).then(res => {
+      // console.log(res.role);
       db.query('INSERT INTO employee VALUES ?', {
         first_name: res.first,
         last_name: res.last,
