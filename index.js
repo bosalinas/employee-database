@@ -152,21 +152,20 @@ const addEmployee = () => {
         choices: roles
       }
     ]).then(res => {
-      // console.log(res.role);
       db.query('INSERT INTO employee VALUES ?', {
         first_name: res.first,
         last_name: res.last,
         role_id: res.roleId,
       },
-        err => {
-          if (err) throw err;
-          console.log('Added employee!')
-        });
-      //callback function to go back to main menu
-      init();
-    });
+      (err, response) => {
+        if (err) {
+          console.error(err)
+        } else {
+          console.log("Employee role updated!")
+          init();
+    }});
   });
-};
+});
 //==========================================================
 const updateEmployeeRole = () => {
   db.query('SELECT * FROM employee', (err, employee) => {
@@ -185,38 +184,42 @@ const updateEmployeeRole = () => {
         choices: employeeInfo
       },
     ])
-    .then(res => {
-      db.query('SELECT * FROM employee_role', (err, empRoles) => {
-        console.log(res.employeeName);
-        if (err) console.log(err);
-        var roles = empRoles.map((role) => {
-          return {
-            name: role.title,
-            value: role.id,
-          };
-        });
-      inquirer
-        .prompt([
-        {
-          type: 'list',
-          name: 'newRole',
-          message: 'Chose new role',
-          choices: roles
-        },
-        ])
-        .then(res => {
-          console.log(res.newRole);
-          db.query('UPDATE employee SET title = (?) WHERE id = (?)', {
-            title: res.newRole,
-            id: res.employeeName, 
-          },
-            err => {
-              if (err) throw err;
-              console.log('Added employee!')
-            });
-            init();
-    });
-  });
-});
-})}
+      .then(res => {
+        db.query('SELECT * FROM employee_role', (err, empRoles) => {
+          const employeeId = res.employeeName;
+          console.log({ employeeId });
+          if (err) console.log(err);
 
+          var roles = empRoles.map((role) => {
+            return {
+              name: role.title,
+              value: role.id,
+            };
+          });
+          inquirer
+            .prompt([
+              {
+                type: 'list',
+                name: 'newRole',
+                message: 'Choose new role',
+                choices: roles
+              },
+            ])
+            .then((res) => {
+              console.log(res);
+              db.query(
+                'UPDATE employee SET role_id = (?) WHERE id = (?)',
+                [res.newRole, employeeId],
+                (err, response) => {
+                  if (err) {
+                    console.error(err)
+                  } else {
+                    console.log("Employee role updated!")
+                    init();
+                  }
+                });
+            });
+        });
+      })
+  })
+}};
