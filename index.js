@@ -41,10 +41,10 @@ function init() {
         addRole();
       }
       if (answers.mainMenu === 'Update an employee role') {
-        updateEmployee();
+        updateEmployeeRole();
       }
       if (answers.mainMenu === 'Exit Menu') {
-        console.log('Exited menu. To restart enter npm start.')
+        console.log('Exited menu. To restart enter node index.js.')
         db.end();
       }
     })
@@ -87,7 +87,7 @@ const viewAllRoles = () => {
   )
 };
 
-//function to query adding an employee 
+//query adding an dept
 const addDept = () => {
   inquirer.prompt({
     type: 'input',
@@ -108,33 +108,58 @@ const addDept = () => {
 
 //query adding a role
 const addRole = () => {
-  inquirer.prompt({
-    type: 'input',
-    name: 'title',
-    message: 'Enter new role'
-  }).then(res => {
-    db.query('INSERT INTO employee_role (title) VALUES (?)', [res.title], (err, response) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log('Role Added!');
-      }
-      //callback function to go back to main menu
-      init();
+  db.query('SELECT * FROM department', (err, depts) => {
+    if (err) console.log(err);
+    var depts = depts.map((dept) => {
+      return {
+        name: dept.deptname,
+        value: dept.id,
+      };
     });
-  });
+    inquirer.prompt({
+      type: 'input',
+      name: 'title',
+      message: 'Enter name of new role',
+    },
+      {
+        type: 'input',
+        name: 'salary',
+        message: 'Enter salary for new role'
+      },
+      {
+        type: 'list',
+        name: 'depts',
+        message: 'Select department for new role',
+        choices: depts
+
+      }).then(res => {
+        db.query('INSERT INTO employee_role SET ?', {
+          title: res.title, 
+          salary: res.salary, 
+          department_id: res.depts,
+        }, (err, response) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log('Role Added!');
+            }
+            //callback function to go back to main menu
+            init();
+          });
+      });
+  })
 };
-//get results out of query and then map then store in var 
+//==========================================================
 const addEmployee = () => {
+  //query to get role_id
   db.query('SELECT * FROM employee_role', (err, empRoles) => {
     if (err) console.log(err);
-    roles = empRoles.map((role) => {
+    var roles = empRoles.map((role) => {
       return {
         name: role.title,
         value: role.id,
       };
     });
-    console.log(roles);
     inquirer.prompt([
       {
         type: 'input',
@@ -149,33 +174,80 @@ const addEmployee = () => {
       {
         type: 'list',
         name: 'roleId',
-        message: 'Chose role for employee',
-        choices: [roles]
+        message: 'Choose role for employee',
+        choices: roles
       }
     ]).then(res => {
-      // console.log(res.role);
-      db.query('INSERT INTO employee VALUES ?', {
+      db.query('INSERT INTO employee SET ?', {
         first_name: res.first,
         last_name: res.last,
         role_id: res.roleId,
       },
-        err => {
-          if (err) throw err;
-          console.log('Added employee!')
+        (err, response) => {
+          if (err) {
+            console.error(err)
+          } else {
+            console.log("Employee added!")
+            init();
+          }
         });
-      //callback function to go back to main menu
-      init();
     });
   });
-}
+  //==========================================================
+  const updateEmployeeRole = () => {
+    db.query('SELECT * FROM employee', (err, employee) => {
+      if (err) console.log(err);
+      var employeeInfo = employee.map((info) => {
+        return {
+          name: `${info.first_name} ${info.last_name}`,
+          value: info.id,
+        };
+      });
+      inquirer.prompt([
+        {
+          type: 'list',
+          name: 'employeeName',
+          message: 'Chose employee',
+          choices: employeeInfo
+        },
+      ])
+        .then(res => {
+          db.query('SELECT * FROM employee_role', (err, empRoles) => {
+            const employeeId = res.employeeName;
+            console.log({ employeeId });
+            if (err) console.log(err);
 
-// const updateRole = () => {
-//   db.query(
-//     'SELECT * FROM employee_role',
-//     function(err, results) {
-//       console.table(results);
-//       init();
-//     }
-//     )};
-
-
+            var roles = empRoles.map((role) => {
+              return {
+                name: role.title,
+                value: role.id,
+              };
+            });
+            inquirer
+              .prompt([
+                {
+                  type: 'list',
+                  name: 'newRole',
+                  message: 'Choose new role',
+                  choices: roles
+                },
+              ])
+              .then((res) => {
+                console.log(res);
+                db.query(
+                  'UPDATE employee SET role_id = (?) WHERE id = (?)',
+                  [res.newRole, employeeId],
+                  (err, response) => {
+                    if (err) {
+                      console.error(err)
+                    } else {
+                      console.log("Employee role updated!")
+                      init();
+                    }
+                  });
+              });
+          });
+        })
+    })
+  }
+};
