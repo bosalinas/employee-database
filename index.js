@@ -41,7 +41,7 @@ function init() {
         addRole();
       }
       if (answers.mainMenu === 'Update an employee role') {
-        updateEmployeeRole();
+        updateEmpRole();
       }
       if (answers.mainMenu === 'Exit Menu') {
         console.log('Exited menu. To restart enter node index.js.')
@@ -116,11 +116,12 @@ const addRole = () => {
         value: dept.id,
       };
     });
-    inquirer.prompt({
-      type: 'input',
-      name: 'title',
-      message: 'Enter name of new role',
-    },
+    inquirer.prompt([
+      {
+        type: 'input',
+        name: 'title',
+        message: 'Enter name of new role',
+      },
       {
         type: 'input',
         name: 'salary',
@@ -132,20 +133,20 @@ const addRole = () => {
         message: 'Select department for new role',
         choices: depts
 
-      }).then(res => {
+      }]).then(res => {
         db.query('INSERT INTO employee_role SET ?', {
-          title: res.title, 
-          salary: res.salary, 
+          title: res.title,
+          salary: res.salary,
           department_id: res.depts,
         }, (err, response) => {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log('Role Added!');
-            }
-            //callback function to go back to main menu
-            init();
-          });
+          if (err) {
+            console.log(err);
+          } else {
+            console.log('Role Added!');
+          }
+          //callback function to go back to main menu
+          init();
+        });
       });
   })
 };
@@ -176,78 +177,96 @@ const addEmployee = () => {
         name: 'roleId',
         message: 'Choose role for employee',
         choices: roles
-      }
-    ]).then(res => {
-      db.query('INSERT INTO employee SET ?', {
-        first_name: res.first,
-        last_name: res.last,
-        role_id: res.roleId,
       },
-        (err, response) => {
-          if (err) {
-            console.error(err)
-          } else {
-            console.log("Employee added!")
-            init();
-          }
-        });
-    });
-  });
-  //==========================================================
-  const updateEmployeeRole = () => {
-    db.query('SELECT * FROM employee', (err, employee) => {
+    ]);
+    db.query('SELECT * FROM employee', (err, manager) => {
       if (err) console.log(err);
-      var employeeInfo = employee.map((info) => {
+      var managers = manager.map((managersId) => {
         return {
-          name: `${info.first_name} ${info.last_name}`,
-          value: info.id,
+          name: managersId.name,
+          value: managersId.id,
         };
       });
       inquirer.prompt([
         {
           type: 'list',
-          name: 'employeeName',
-          message: 'Chose employee',
-          choices: employeeInfo
+          name: 'managerId',
+          message: 'Choose manager for employee',
+          choices: managers
+        }
+      ]).then(res => {
+        db.query('INSERT INTO employee SET ?', {
+          first_name: res.first,
+          last_name: res.last,
+          role_id: res.roleId,
+          manager_id: res.managerId,
         },
-      ])
-        .then(res => {
-          db.query('SELECT * FROM employee_role', (err, empRoles) => {
-            const employeeId = res.employeeName;
-            console.log({ employeeId });
-            if (err) console.log(err);
-
-            var roles = empRoles.map((role) => {
-              return {
-                name: role.title,
-                value: role.id,
-              };
-            });
-            inquirer
-              .prompt([
-                {
-                  type: 'list',
-                  name: 'newRole',
-                  message: 'Choose new role',
-                  choices: roles
-                },
-              ])
-              .then((res) => {
-                console.log(res);
-                db.query(
-                  'UPDATE employee SET role_id = (?) WHERE id = (?)',
-                  [res.newRole, employeeId],
-                  (err, response) => {
-                    if (err) {
-                      console.error(err)
-                    } else {
-                      console.log("Employee role updated!")
-                      init();
-                    }
-                  });
-              });
+          (err, response) => {
+            if (err) {
+              console.error(err)
+            } else {
+              console.log("Employee added!")
+              init();
+            }
           });
-        })
-    })
-  }
+      });
+    });
+  })
+};
+//==========================================================
+const updateEmpRole = () => {
+  db.query('SELECT * FROM employee', (err, employee) => {
+    if (err) console.log(err);
+    var employeeInfo = employee.map((info) => {
+      return {
+        name: `${info.first_name} ${info.last_name}`,
+        value: info.id,
+      };
+    });
+    inquirer.prompt([
+      {
+        type: 'list',
+        name: 'employeeName',
+        message: 'Chose employee',
+        choices: employeeInfo
+      },
+    ])
+      .then(res => {
+        db.query('SELECT * FROM employee_role', (err, empRoles) => {
+          const employeeId = res.employeeName;
+          console.log({ employeeId });
+          if (err) console.log(err);
+
+          var roles = empRoles.map((role) => {
+            return {
+              name: role.title,
+              value: role.id,
+            };
+          });
+          inquirer
+            .prompt([
+              {
+                type: 'list',
+                name: 'newRole',
+                message: 'Choose new role',
+                choices: roles
+              },
+            ])
+            .then((res) => {
+              console.log(res);
+              db.query(
+                'UPDATE employee SET role_id = (?) WHERE id = (?)',
+                [res.newRole, employeeId],
+                (err, response) => {
+                  if (err) {
+                    console.error(err)
+                  } else {
+                    console.log("Employee role updated!")
+                    init();
+                  }
+                });
+            });
+        });
+      })
+  })
 };
