@@ -1,4 +1,3 @@
-// prompt user with questions 
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 
@@ -9,11 +8,11 @@ const db = mysql.createConnection({
   password: 'St@rkill2018as$'
 });
 
-// function to ask questions
+// function to start menu
 function init() {
   inquirer
     .prompt([
-      /* Pass your question for menu in here */
+      // questions for menu in here
       {
         type: "list",
         name: "mainMenu",
@@ -150,7 +149,7 @@ const addRole = () => {
       });
   })
 };
-//==========================================================
+
 const addEmployee = () => {
   //query to get role_id
   db.query('SELECT * FROM employee_role', (err, empRoles) => {
@@ -178,12 +177,14 @@ const addEmployee = () => {
         message: 'Choose role for employee',
         choices: roles
       },
-    ]);
-    db.query('SELECT * FROM employee', (err, manager) => {
+    ])
+    .then (res => {
+      db.query('SELECT first_name, last_name FROM employee WHERE manager_id IS NULL', (err, manager) => {
       if (err) console.log(err);
+      const newEmployeeInfo = res
       var managers = manager.map((managersId) => {
         return {
-          name: managersId.name,
+          name: managersId.first_name + " " + managersId.last_name,
           value: managersId.id,
         };
       });
@@ -196,9 +197,9 @@ const addEmployee = () => {
         }
       ]).then(res => {
         db.query('INSERT INTO employee SET ?', {
-          first_name: res.first,
-          last_name: res.last,
-          role_id: res.roleId,
+          first_name: newEmployeeInfo.first,
+          last_name: newEmployeeInfo.last,
+          role_id: newEmployeeInfo.roleId,
           manager_id: res.managerId,
         },
           (err, response) => {
@@ -212,8 +213,8 @@ const addEmployee = () => {
       });
     });
   })
-};
-//==========================================================
+})};
+
 const updateEmpRole = () => {
   db.query('SELECT * FROM employee', (err, employee) => {
     if (err) console.log(err);
